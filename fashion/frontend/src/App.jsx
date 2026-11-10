@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import Navbar from './components/Navbar'
 import HeroBanner from './components/HeroBanner'
 import ProductCard from './components/ProductCard'
+import AuthModal from './context/AuthModel'
 import CartDrawer from './components/CartDrawer'
 import { DEPARTMENT_CONFIGS, PRODUCTS_CATALOG } from './data/mockData'
 
@@ -111,8 +112,8 @@ export default function App() {
                                 key={cat}
                                 onClick={() => setSelectedCategory(cat)}
                                 className={`text-xs px-3 py-1.5 rounded-full whitespace-nowrap ${selectedCategory === cat
-                                        ? 'bg-stone-900 text-white font-semibold'
-                                        : 'bg-white border text-stone-600'
+                                    ? 'bg-stone-900 text-white font-semibold'
+                                    : 'bg-white border text-stone-600'
                                     }`}
                             >
                                 {cat}
@@ -147,6 +148,9 @@ export default function App() {
                 onUpdateQuantity={handleUpdateQuantity}
                 onRemove={handleRemove}
             />
+
+            {/* 69 Club Sign In / Register Pop-up */}
+            <AuthModal />
         </div>
     )
 }

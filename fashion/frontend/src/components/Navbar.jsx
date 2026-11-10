@@ -1,5 +1,6 @@
 import React from 'react'
-import { ShoppingBag, Search, Sparkles } from 'lucide-react'
+import { ShoppingBag, Search, Sparkles, User, LogOut, Package } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
 export default function Navbar({
     activeDepartment,
@@ -12,6 +13,8 @@ export default function Navbar({
     searchQuery,
     onSearchChange,
 }) {
+    const { user, openAuth, logout } = useAuth()
+
     const departments = [
         { key: 'women', label: 'WOMEN' },
         { key: 'men', label: 'MEN' },
@@ -50,11 +53,27 @@ export default function Navbar({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-20">
 
-                    {/* Brand Logo */}
+                    {/* Brand Logo & Department Nav Group */}
                     <div className="flex items-center space-x-6">
-                        <span className="text-2xl sm:text-3xl font-black tracking-widest uppercase cursor-pointer">
-                            ATELIER<span className="text-rose-500">.</span>
-                        </span>
+                        {/* 69 STORE Brand Logo */}
+                        <div
+                            onClick={() => { onSelectCategory('All'); onSearchChange(''); }}
+                            className="flex items-center space-x-3 cursor-pointer group py-1"
+                        >
+                            <img
+                                src="/Neon Graffiti 69 Store Logo.png"
+                                alt="69 STORE Logo"
+                                className="h-12 w-auto rounded-lg object-contain group-hover:scale-105 transition-transform duration-300 shadow-sm border border-stone-200"
+                            />
+                            <div className="flex flex-col leading-none">
+                                <span className="text-lg sm:text-xl font-black tracking-wider uppercase text-stone-900 group-hover:text-rose-500 transition-colors">
+                                    69 STORE
+                                </span>
+                                <span className="text-[9px] font-bold tracking-[0.22em] text-stone-500 uppercase mt-0.5">
+                                    THRIFT • WEAR • REPEAT
+                                </span>
+                            </div>
+                        </div>
 
                         {/* Department Categories */}
                         <nav className="hidden lg:flex space-x-6 text-sm">
@@ -73,9 +92,11 @@ export default function Navbar({
                         </nav>
                     </div>
 
-                    {/* Search & Shopping Bag */}
-                    <div className="flex items-center space-x-4">
-                        <div className="relative hidden sm:block w-48 lg:w-60">
+                    {/* Search, Account Profile & Shopping Bag */}
+                    <div className="flex items-center space-x-3 sm:space-x-4">
+
+                        {/* Search Input */}
+                        <div className="relative hidden md:block w-44 lg:w-56">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                             <input
                                 type="text"
@@ -86,6 +107,48 @@ export default function Navbar({
                             />
                         </div>
 
+                        {/* User Account Button / Avatar Menu */}
+                        {user ? (
+                            <div className="relative group">
+                                <button className="flex items-center space-x-2 p-1 rounded-full hover:bg-stone-100 transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm">
+                                        {user.name ? user.name.charAt(0) : 'U'}
+                                    </div>
+                                </button>
+
+                                {/* Profile Dropdown Menu */}
+                                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-stone-100 py-2 hidden group-hover:block z-50">
+                                    <div className="px-4 py-2 border-b border-stone-100">
+                                        <p className="text-xs font-bold text-stone-900 truncate">{user.name}</p>
+                                        <p className="text-[10px] text-stone-400 truncate">{user.email}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => alert(`Showing order history for ${user.email}`)}
+                                        className="w-full flex items-center space-x-2 text-left px-4 py-2 text-xs text-stone-700 hover:bg-stone-50 transition-colors font-medium"
+                                    >
+                                        <Package className="w-3.5 h-3.5 text-stone-400" />
+                                        <span>My Orders</span>
+                                    </button>
+                                    <button
+                                        onClick={logout}
+                                        className="w-full flex items-center space-x-2 text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors font-semibold"
+                                    >
+                                        <LogOut className="w-3.5 h-3.5 text-red-500" />
+                                        <span>Sign Out</span>
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={openAuth}
+                                className="flex items-center space-x-1.5 text-xs font-bold text-stone-800 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 px-3.5 py-2 rounded-full transition-all active:scale-95"
+                            >
+                                <User className="w-3.5 h-3.5" />
+                                <span>Sign In</span>
+                            </button>
+                        )}
+
+                        {/* Shopping Bag Icon */}
                         <button
                             onClick={onOpenCart}
                             className="relative p-2.5 rounded-full hover:bg-stone-100 transition-colors"

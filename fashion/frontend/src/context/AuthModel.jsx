@@ -1,0 +1,192 @@
+import React, { useState } from 'react'
+import { X, Sparkles, Lock, Mail, User } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+
+export default function AuthModal() {
+    const { isAuthOpen, closeAuth, login, register } = useAuth()
+    const [mode, setMode] = useState('login') // 'login' | 'register'
+
+    // Form fields
+    const [name, setName] = useState('')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [department, setDepartment] = useState('unisex')
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
+
+    if (!isAuthOpen) return null
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setError('')
+        setLoading(true)
+
+        try {
+            if (mode === 'login') {
+                if (!email || !password) throw new Error('Please fill in all fields.')
+                await login(email, password)
+            } else {
+                if (!name || !email || !password) throw new Error('Please fill in all fields.')
+                await register(name, email, password, department)
+            }
+        } catch (err) {
+            setError(err.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+                onClick={closeAuth}
+            />
+
+            {/* Modal Container */}
+            <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-stone-100 z-10 animate-scale">
+
+                {/* Header Graphic */}
+                <div className="bg-stone-900 text-white p-6 relative">
+                    <button
+                        onClick={closeAuth}
+                        className="absolute top-5 right-5 text-stone-400 hover:text-white p-1 rounded-full transition-colors"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+
+                    <div className="flex items-center space-x-2 text-rose-400 text-xs font-bold uppercase tracking-wider mb-1">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>69 Archive Club</span>
+                    </div>
+                    <h2 className="text-2xl font-black tracking-tight">
+                        {mode === 'login' ? 'Welcome Back.' : 'Join the 69 Club.'}
+                    </h2>
+                    <p className="text-xs text-stone-400 mt-1">
+                        {mode === 'login'
+                            ? 'Sign in to access your order history and saved thrift gems.'
+                            : 'Create an account for early access to vintage drops and express checkout.'}
+                    </p>
+
+                    {/* Mode Switcher Tabs */}
+                    <div className="flex bg-stone-800 rounded-xl p-1 mt-6 text-xs font-bold">
+                        <button
+                            onClick={() => { setMode('login'); setError(''); }}
+                            className={`flex-1 py-2 rounded-lg transition-all ${mode === 'login' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-400 hover:text-white'
+                                }`}
+                        >
+                            Sign In
+                        </button>
+                        <button
+                            onClick={() => { setMode('register'); setError(''); }}
+                            className={`flex-1 py-2 rounded-lg transition-all ${mode === 'register' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-400 hover:text-white'
+                                }`}
+                        >
+                            Create Account
+                        </button>
+                    </div>
+                </div>
+
+                {/* Form Body */}
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {error && (
+                        <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl font-medium">
+                            {error}
+                        </div>
+                    )}
+
+                    {/* Name Field (Register only) */}
+                    {mode === 'register' && (
+                        <div>
+                            <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1">
+                                Full Name
+                            </label>
+                            <div className="relative">
+                                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Alex River"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900"
+                                    required
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Email Field */}
+                    <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1">
+                            Email Address
+                        </label>
+                        <div className="relative">
+                            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                            <input
+                                type="email"
+                                placeholder="you@domain.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {/* Password Field */}
+                    <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1">
+                            Password
+                        </label>
+                        <div className="relative">
+                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                            <input
+                                type="password"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-900"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {/* Preferred Department (Register only) */}
+                    {mode === 'register' && (
+                        <div>
+                            <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1">
+                                Preferred Style
+                            </label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {['women', 'men', 'unisex'].map((dept) => (
+                                    <button
+                                        type="button"
+                                        key={dept}
+                                        onClick={() => setDepartment(dept)}
+                                        className={`py-2 text-xs font-semibold rounded-xl border uppercase tracking-wider transition-all ${department === dept
+                                                ? 'border-stone-900 bg-stone-900 text-white'
+                                                : 'border-stone-200 text-stone-600 hover:border-stone-400 bg-stone-50'
+                                            }`}
+                                    >
+                                        {dept}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-stone-900 hover:bg-stone-800 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 text-sm mt-2"
+                    >
+                        {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create My Account'}
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    )
+}
