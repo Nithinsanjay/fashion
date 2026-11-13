@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
-from datetime import datetime
+from datetime import datetime, timezone
 from core.database import Base
 
 class User(Base):
@@ -11,4 +11,4 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     preferred_department = Column(String(20), default="unisex")
     is_admin = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Navbar from './components/Navbar'
 import HeroBanner from './components/HeroBanner'
 import ProductCard from './components/ProductCard'
@@ -12,8 +12,23 @@ export default function App() {
     const [searchQuery, setSearchQuery] = useState('')
     const [cart, setCart] = useState([])
     const [isCartOpen, setIsCartOpen] = useState(false)
+    const [products, setProducts] = useState(PRODUCTS_CATALOG)
 
     const activeConfig = DEPARTMENT_CONFIGS[activeDepartment]
+
+    // Fetch live products from PostgreSQL backend
+    useEffect(() => {
+        fetch('http://localhost:8000/api/products')
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (data && data.length > 0) {
+                    setProducts(data)
+                }
+            })
+            .catch(() => {
+                // Fallback gracefully to catalog
+            })
+    }, [])
 
     // Switch department handler
     const handleDepartmentChange = (deptKey) => {
@@ -65,7 +80,7 @@ export default function App() {
     }
 
     // Filter products by department, category, and search
-    const visibleProducts = PRODUCTS_CATALOG.filter((product) => {
+    const visibleProducts = products.filter((product) => {
         const matchDept = product.department === activeDepartment
         const matchCat = selectedCategory === 'All' || product.category === selectedCategory
         const matchSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -111,10 +126,11 @@ export default function App() {
                             <button
                                 key={cat}
                                 onClick={() => setSelectedCategory(cat)}
-                                className={`text-xs px-3 py-1.5 rounded-full whitespace-nowrap ${selectedCategory === cat
-                                    ? 'bg-stone-900 text-white font-semibold'
-                                    : 'bg-white border text-stone-600'
-                                    }`}
+                                className={`px-3 py-1 text-xs rounded-full font-bold whitespace-nowrap transition-all ${
+                                    selectedCategory === cat
+                                        ? 'bg-stone-900 text-white shadow-sm'
+                                        : 'bg-white text-stone-600 border border-stone-200'
+                                }`}
                             >
                                 {cat}
                             </button>
@@ -122,13 +138,24 @@ export default function App() {
                     </div>
                 </div>
 
-                {/* Product Cards Grid */}
+                {/* Product Grid */}
                 {visibleProducts.length === 0 ? (
-                    <div className="text-center py-24 text-stone-400">
-                        No items found for "{searchQuery}".
+                    <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-stone-200">
+                        <p className="text-stone-400 text-sm font-semibold uppercase tracking-wider">
+                            No pieces found in this category.
+                        </p>
+                        <button
+                            onClick={() => {
+                                setSelectedCategory('All')
+                                setSearchQuery('')
+                            }}
+                            className="mt-4 px-6 py-2 bg-stone-900 text-white rounded-full text-xs font-bold hover:bg-stone-800 transition-all shadow-sm"
+                        >
+                            Reset Filters
+                        </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {visibleProducts.map((product) => (
                             <ProductCard
                                 key={product.id}
@@ -140,17 +167,15 @@ export default function App() {
                 )}
             </main>
 
-            {/* Slide-out Cart Drawer */}
+            {/* Auth Modal & Cart Drawer */}
+            <AuthModal />
             <CartDrawer
                 isOpen={isCartOpen}
                 onClose={() => setIsCartOpen(false)}
-                cart={cart}
+                cartItems={cart}
                 onUpdateQuantity={handleUpdateQuantity}
                 onRemove={handleRemove}
             />
-
-            {/* 69 Club Sign In / Register Pop-up */}
-            <AuthModal />
         </div>
     )
 }

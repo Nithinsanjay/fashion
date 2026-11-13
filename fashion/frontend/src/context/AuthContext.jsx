@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext()
 
+const API_BASE = 'http://localhost:8000'
+
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [isAuthOpen, setIsAuthOpen] = useState(false)
@@ -18,34 +20,73 @@ export function AuthProvider({ children }) {
         }
     }, [])
 
-    // Login handler
+    // Real API Login handler
     const login = async (email, password) => {
-        // We will connect this to FastAPI backend /api/auth/login
-        // For now, it logs the user in immediately:
-        const mockUser = {
-            id: 1,
-            name: email.split('@')[0],
-            email: email,
-            preferredDepartment: 'unisex',
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            })
+
+            const data = await res.json()
+            if (!res.ok) {
+                throw new Error(data.detail || 'Failed to log in.')
+            }
+
+            const sessionUser = {
+                id: data.id,
+                name: data.full_name,
+                email: data.email,
+                preferredDepartment: data.preferred_department,
+                token: data.access_token
+            }
+
+            setUser(sessionUser)
+            localStorage.setItem('69store_user', JSON.stringify(sessionUser))
+            setIsAuthOpen(false)
+            return { success: true }
+        } catch (err) {
+            console.error('Login error:', err)
+            throw err
         }
-        setUser(mockUser)
-        localStorage.setItem('69store_user', JSON.stringify(mockUser))
-        setIsAuthOpen(false)
-        return { success: true }
     }
 
-    // Register handler
+    // Real API Register handler
     const register = async (name, email, password, preferredDepartment) => {
-        const newUser = {
-            id: Date.now(),
-            name: name,
-            email: email,
-            preferredDepartment: preferredDepartment || 'unisex',
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    full_name: name,
+                    email: email,
+                    password: password,
+                    preferred_department: preferredDepartment || 'unisex'
+                })
+            })
+
+            const data = await res.json()
+            if (!res.ok) {
+                throw new Error(data.detail || 'Failed to register.')
+            }
+
+            const sessionUser = {
+                id: data.id,
+                name: data.full_name,
+                email: data.email,
+                preferredDepartment: data.preferred_department,
+                token: data.access_token
+            }
+
+            setUser(sessionUser)
+            localStorage.setItem('69store_user', JSON.stringify(sessionUser))
+            setIsAuthOpen(false)
+            return { success: true }
+        } catch (err) {
+            console.error('Registration error:', err)
+            throw err
         }
-        setUser(newUser)
-        localStorage.setItem('69store_user', JSON.stringify(newUser))
-        setIsAuthOpen(false)
-        return { success: true }
     }
 
     // Logout handler
